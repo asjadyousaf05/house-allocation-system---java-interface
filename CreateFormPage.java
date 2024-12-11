@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CreateFormPage extends JFrame {
 
@@ -66,7 +68,7 @@ public class CreateFormPage extends JFrame {
         fatherNameField.setPreferredSize(inputSize);
         formPanel.add(fatherNameField);
 
-        // CNIC field
+        // CNIC field with validation
         JLabel cnicLabel = new JLabel("CNIC:");
         cnicLabel.setFont(labelFont);
         formPanel.add(cnicLabel);
@@ -103,39 +105,36 @@ public class CreateFormPage extends JFrame {
         formPanel.add(spouseLabel);
         formPanel.add(spouseField);
 
-        // Number of Children
+        // Number of Children (Spinner)
         JLabel childrenLabel = new JLabel("Number of Children:");
         childrenLabel.setFont(labelFont);
-        JTextField childrenField = new JTextField();
-        childrenField.setFont(inputFont);
-        childrenField.setPreferredSize(inputSize);
-        childrenLabel.setEnabled(false);
-        childrenField.setEnabled(false);
         formPanel.add(childrenLabel);
-        formPanel.add(childrenField);
+        JSpinner childrenSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 10, 1)); // Number between 0 and 10
+        childrenSpinner.setFont(inputFont);
+        formPanel.add(childrenSpinner);
 
         marriedButton.addActionListener(e -> {
             spouseLabel.setEnabled(true);
             spouseField.setEnabled(true);
             childrenLabel.setEnabled(true);
-            childrenField.setEnabled(true);
+            childrenSpinner.setEnabled(true);
         });
 
         unmarriedButton.addActionListener(e -> {
             spouseLabel.setEnabled(false);
             spouseField.setEnabled(false);
             childrenLabel.setEnabled(false);
-            childrenField.setEnabled(false);
+            childrenSpinner.setEnabled(false);
         });
 
-        // Department field
+        // Department field (Dropdown)
         JLabel departmentLabel = new JLabel("Department:");
         departmentLabel.setFont(labelFont);
         formPanel.add(departmentLabel);
-        JTextField departmentField = new JTextField();
-        departmentField.setFont(inputFont);
-        departmentField.setPreferredSize(inputSize);
-        formPanel.add(departmentField);
+        String[] departments = {"COMPUTER SCIENCE", "INFORMATION TECHNOLOGY", "ZOLOGY", "MICROBIOLOGY", "STATICTICS" , "MATH" , "PUBLIC ADMINISTRATION" ,"INTERANATIONAL REALTIONS" , "ENGLISH" , "CHEMISTRY" , "DSS" , "ELECTRONICS" , "SOCIOLOGY" , "PSYCHOLOGY"};
+        JComboBox<String> departmentComboBox = new JComboBox<>(departments);
+        departmentComboBox.setFont(inputFont);
+        formPanel.add(departmentComboBox);
 
         // Designation field
         JLabel designationLabel = new JLabel("Designation:");
@@ -167,15 +166,24 @@ public class CreateFormPage extends JFrame {
         submitButton.setFocusPainted(false);
         submitButton.setPreferredSize(new Dimension(100, 30));
         submitButton.addActionListener(e -> {
+            String cnicText = cnicField.getText().trim();
+
+            // Validate CNIC format
+            String cnicPattern = "^\\d{4}-\\d{7}-\\d{1}$";
+            Pattern pattern = Pattern.compile(cnicPattern);
+            Matcher matcher = pattern.matcher(cnicText);
+
             if (nameField.getText().trim().isEmpty() ||
                 fatherNameField.getText().trim().isEmpty() ||
-                cnicField.getText().trim().isEmpty() ||
+                cnicText.isEmpty() ||
                 (!marriedButton.isSelected() && !unmarriedButton.isSelected()) ||
-                departmentField.getText().trim().isEmpty() ||
+                departmentComboBox.getSelectedItem() == null ||
                 designationField.getText().trim().isEmpty() ||
-                (marriedButton.isSelected() && (spouseField.getText().trim().isEmpty() || childrenField.getText().trim().isEmpty()))) {
-                
+                (marriedButton.isSelected() && (spouseField.getText().trim().isEmpty() || childrenSpinner.getValue().equals(0)))) {
+
                 JOptionPane.showMessageDialog(CreateFormPage.this, "Please fill in all required fields.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            } else if (!matcher.matches()) {
+                JOptionPane.showMessageDialog(CreateFormPage.this, "Invalid CNIC format. It should be 0000-0000000-0.", "Validation Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(CreateFormPage.this, "Form submitted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             }
